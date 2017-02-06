@@ -44,7 +44,7 @@ class InvestmentController extends Controller
         $investment= new Investment ($request->all());
         $investment->save();
 
-        return redirect('investment');
+        return redirect('investments');
     }
 
     public function edit($id)
