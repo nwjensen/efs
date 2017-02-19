@@ -1,5 +1,24 @@
 @extends('app')
 @section('content')
+
+       <?php
+    $stockprice=null;
+    $stotal = 0;
+    $svalue=0;
+    $itotal = 0;
+    $ivalue=0;
+    $iportfolio = 0;
+    $cportfolio = 32000;
+    $chartFundTotal = 0;
+    $chart401kTotal = 0;
+    $chartOtherTotal = 0;
+    $chartPropertyTotal = 0;
+    $currentStockValue = 0;
+    $currentStockPortfolioTotal = 0;
+    $currentInvestmentPortfolio = 0;
+    ?>
+
+
     <h1>Customer</h1>
 
     <div class="container">
@@ -46,6 +65,12 @@
 
 <br>
 
+
+
+
+
+
+
             <?php
     $stockprice=null;
     $stotal = 0;
@@ -58,6 +83,9 @@
     $chart401kTotal = 0;
     $chartOtherTotal = 0;
     $chartPropertyTotal = 0;
+    $currentStockValue = 0;
+    $currentStockPortfolioTotal = 0;
+    $currentInvestmentPortfolio = 0;
     ?>
 
 
@@ -79,22 +107,59 @@
 
             <tbody>
                  @foreach($customer->stocks as $stock)
+                    
+
+<?php
+       $ssymbol = $stock->symbol;
+       
+
+        $URL = "http://www.google.com/finance/info?q=NSE:" . $ssymbol;
+        $file = fopen("$URL", "r");
+        $r = "";
+        do {
+            $data = fread($file, 500);
+            $r .= $data;
+        } while (strlen($data) != 0);
+        //Remove CR's from ouput - make it one line
+        $json = str_replace("\n", "", $r);
+
+        //Remove //, [ and ] to build qualified string
+        $data = substr($json, 4, strlen($json) - 5);
+
+        //decode JSON data
+        $json_output = json_decode($data, true);
+        //echo $sstring, "<br>   ";
+        $price = "\n" . $json_output['l'];
+
+     
+
+        ?>
+
+
+
                     <tr>
                         <td>{{ $stock->symbol }}</td>
                         <td>{{ $stock->name }}</td>
                         <td>{{ $stock->shares }}</td>
                         <td>{{ $stock->purchase_price }}</td>
                         <td>{{ $stock->purchased }}</td>
-                    <?php
-                       $svalue = $stock->shares * $stock->purchase_price;
-                       $stotal = $stotal + $svalue
-                       ?>
+                            <?php
+                             $svalue = $stock->shares * $stock->purchase_price;
+                             $stotal = $stotal + $svalue
+                            ?>
                         <td>{{ $svalue }}</td>
-                    
-                    <?php
-
-                        $svalue = 0
-                       ?>
+                        
+                        <td>{{ $price }}</td>
+                            <?php
+                             $currentStockValue = $stock->shares * $price;
+                             $currentStockPortfolioTotal = $currentStockPortfolioTotal +  $currentStockValue
+                             ?>
+                       
+                        <td>{{ $currentStockValue }}</td>
+                            <?php
+                             $svalue = 0;
+                             $currentStockValue = 0;
+                            ?>
 
                     </tr>
                  @endforeach
@@ -102,7 +167,7 @@
 
 </table>
 <h4>Total of INITIAL stock portfolio ${{$stotal}}</h4>
-<h4>Total of CURRENT stock portfolio ________</h4>
+<h4>Total of CURRENT stock portfolio ${{$currentStockPortfolioTotal}}</h4>
 </div>
 
 
@@ -121,8 +186,6 @@
                 <th>Acquired Date</th>
                 <th>Recent Value</th>
                 <th>Recent Date</th>
-                <th>Current Price</th>
-                <th>Current Value</th>
             </tr>
             </thead>
     
@@ -143,30 +206,34 @@
                        $ivalue = $ivalue + $investment->acquired_value 
                        ?>
 
+                      <?php
+                       $currentInvestmentPortfolio = $investment->recent_value + $currentInvestmentPortfolio
+                       ?>
+
                        <?php
                             if ($investment->category == "401k")
-                            $chart401kTotal = $chart401kTotal + $investment->acquired_value;
+                            $chart401kTotal = $chart401kTotal + $investment->recent_value;
                         ?>
 
                         <?php
                             if ($investment->category == "other")
-                            $chartOtherTotal = $chartOtherTotal + $investment->acquired_value;
+                            $chartOtherTotal = $chartOtherTotal + $investment->recent_value;
                         ?>
 
                         <?php
                             if ($investment->category == "fund")
-                            $chartFundTotal = $chartFundTotal + $investment->acquired_value;
+                            $chartFundTotal = $chartFundTotal + $investment->recent_value;
                         ?>
 
                         <?php
                             if ($investment->category == "property")
-                            $chartPropertyTotal = $chartPropertyTotal + $investment->acquired_value;
+                            $chartPropertyTotal = $chartPropertyTotal + $investment->recent_value;
                         ?>
                  @endforeach
             </tbody>
     </table>
         <h4>Total of INITIAL investment portfolio ${{$ivalue}}</h4>
-        <h4>Total of CURRENT investment portfolio ________</h4>
+        <h4>Total of CURRENT investment portfolio ${{$currentInvestmentPortfolio}}</h4>
     </div>
  
 
@@ -178,27 +245,22 @@
       google.charts.load('current', {'packages':['corechart']});
       google.charts.setOnLoadCallback(drawChart);
       function drawChart() {
-
         var data = google.visualization.arrayToDataTable([
-          ['Investments', 'Asset Mix'],
+          ['Investments', 'Investment Mix'],
           ['Funds',     <?php echo  $chartFundTotal ?>],
           ['Properties',     <?php echo  $chartPropertyTotal ?>],
           ['Other',  <?php echo  $chartOtherTotal ?>],
           ['401k', <?php echo  $chart401kTotal ?>],
         ]);
-
         var options = {
-          title: 'Initial Investment Mixture'
+          title: 'Current Investment Exposure'
         };
-
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-
-        chart.draw(data, {width: 400, height: 240, is3D: true, title: 'Initial Investment Mixture'});
+        chart.draw(data, {width: 400, height: 240, is3D: true, title: 'Current Investment Mix'});
       }
     </script>
 
-<div id="piechart" style="width: 900px; height: 500px;"></div>
-     
+
 
 
 
@@ -208,9 +270,14 @@
         $iportfolio = $ivalue + $stotal
     ?>
 
+    <?php
+        $cportfolio = $currentInvestmentPortfolio + $currentStockPortfolioTotal
+    ?>
+
 <h2>Summary of Portfolio</h2>
-    <h4>Total of INITIAL portfolio value ${{$iportfolio}}</h4>
-    <h4>Total of CURRENT portfolio value ________</h4>
+ 
+
+
 
  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
@@ -219,16 +286,40 @@
       function drawChart() {
         var data = google.visualization.arrayToDataTable([
           ['Value', 'Initial', 'Current'],
-          ['Portfolio',  <?php echo  $iportfolio ?>,     <?php echo  $cportfolio ?>]
+          ['Portfolio Investment $',  <?php echo  $iportfolio ?>,     <?php echo  $cportfolio ?>]
         ]);
-
         var chart = new google.visualization.ColumnChart(document.getElementById('summary_chart'));
-        chart.draw(data, {width: 400, height: 240, is3D: true, title: 'Portfolio Performance'});
+        chart.draw(data, {min:0, width: 400, height: 240, is3D: true, title: 'Current Portfolio Performance'});
       }
     </script>
   </head>
 
   <body>
-    <div id="summary_chart"></div>
+    
   </body>
+
+    <?php
+        $netGain = 0;
+        $netGain = $cportfolio - $iportfolio;
+    ?>
+
+<table style="width:90%" align="center">
+  <tr>
+    <th></th>
+    <th></th>
+  </tr>
+  <tr>
+    <td><div id="summary_chart"></div>
+    <h6>Initial Portfolio Value: <b>${{$iportfolio}}</b></h6>
+    <h6>Current Portfolio Value: <b>${{$cportfolio}}</b></h6>
+    <h6>Net Gain: <b>${{$netGain}}</b></h6>
+    </td>
+    <td><div id="piechart"></div></td>
+  </tr>
+  </table>
+   
+
+   
+
+
 @stop

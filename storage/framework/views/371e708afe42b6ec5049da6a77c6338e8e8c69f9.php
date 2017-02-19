@@ -27,6 +27,19 @@
 
     </div>
 
+   <div class="form-group">
+        <?php echo Form::label('recent_value', 'Recent Value:'); ?>
+
+        <?php echo Form::text('recent_value',null,['class'=>'form-control']); ?>
+
+    </div>
+    <div class="form-group">
+        <?php echo Form::label('recent_date', 'Recent Date:'); ?>
+
+        <?php echo Form::text('recent_date',null,['class'=>'form-control']); ?>
+
+    </div>
+
     <div class="form-group">
         <?php echo Form::submit('Update', ['class' => 'btn btn-primary']); ?>
 
