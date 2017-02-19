@@ -9,7 +9,8 @@
 
     <div class="form-group">
         {!! Form::label('category', 'Category:') !!}
-        {!! Form::text('category',null,['class'=>'form-control']) !!}
+        {!! Form::select('category',['401k' => '401k', 'fund' => 'Fund', 'property' => 'Property', 'other' => 'Other']) !!}
+
     </div>
     <div class="form-group">
         {!! Form::label('description', 'Description:') !!}

@@ -11,7 +11,8 @@
     <div class="form-group">
         <?php echo Form::label('category', 'Category:'); ?>
 
-        <?php echo Form::text('category',null,['class'=>'form-control']); ?>
+        <?php echo Form::select('category',['401k' => '401k', 'fund' => 'Fund', 'property' => 'Property', 'other' => 'Other']); ?>
+
 
     </div>
     <div class="form-group">

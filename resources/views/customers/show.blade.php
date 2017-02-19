@@ -1,6 +1,6 @@
 @extends('app')
 @section('content')
-    <h1>Customer </h1>
+    <h1>Customer</h1>
 
     <div class="container">
         <table class="table table-striped table-bordered table-hover">
@@ -44,4 +44,191 @@
       </table>
     </div>
 
+<br>
+
+            <?php
+    $stockprice=null;
+    $stotal = 0;
+    $svalue=0;
+    $itotal = 0;
+    $ivalue=0;
+    $iportfolio = 0;
+    $cportfolio = 32000;
+    $chartFundTotal = 0;
+    $chart401kTotal = 0;
+    $chartOtherTotal = 0;
+    $chartPropertyTotal = 0;
+    ?>
+
+
+    <h2>Stocks</h2>
+    <div class="container">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+            <tr class="bg-info">
+                <th> Symbol </th>
+                <th>Stock Name</th>
+                <th>No. of Shares</th>
+                <th>Purchase Price</th>
+                <th>Purchase Date</th>
+                <th>Original Value</th>
+                <th>Current Price</th>
+                <th>Current Value</th>
+            </tr>
+            </thead>
+
+            <tbody>
+                 @foreach($customer->stocks as $stock)
+                    <tr>
+                        <td>{{ $stock->symbol }}</td>
+                        <td>{{ $stock->name }}</td>
+                        <td>{{ $stock->shares }}</td>
+                        <td>{{ $stock->purchase_price }}</td>
+                        <td>{{ $stock->purchased }}</td>
+                    <?php
+                       $svalue = $stock->shares * $stock->purchase_price;
+                       $stotal = $stotal + $svalue
+                       ?>
+                        <td>{{ $svalue }}</td>
+                    
+                    <?php
+
+                        $svalue = 0
+                       ?>
+
+                    </tr>
+                 @endforeach
+            </tbody>
+
+</table>
+<h4>Total of INITIAL stock portfolio ${{$stotal}}</h4>
+<h4>Total of CURRENT stock portfolio ________</h4>
+</div>
+
+
+<br>
+    
+
+
+    <h2>Investments</h2>
+    <div class="container">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+            <tr class="bg-info">
+                <th>Category</th>
+                <th>Description</th>
+                <th>Acquired Value</th>
+                <th>Acquired Date</th>
+                <th>Recent Value</th>
+                <th>Recent Date</th>
+                <th>Current Price</th>
+                <th>Current Value</th>
+            </tr>
+            </thead>
+    
+            <tbody>
+                 @foreach($customer->investments as $investment)
+                    <tr>
+                        <td>{{ $investment->category }}</td>
+                        <td>{{ $investment->description }}</td>
+                        <td>{{ $investment->acquired_value }}</td>
+                        <td>{{ $investment->acquired_date }}</td>
+                        <td>{{ $investment->recent_value }}</td>
+                        <td>{{ $investment->recent_date }}</td>
+
+
+                        
+                    </tr>
+                      <?php
+                       $ivalue = $ivalue + $investment->acquired_value 
+                       ?>
+
+                       <?php
+                            if ($investment->category == "401k")
+                            $chart401kTotal = $chart401kTotal + $investment->acquired_value;
+                        ?>
+
+                        <?php
+                            if ($investment->category == "other")
+                            $chartOtherTotal = $chartOtherTotal + $investment->acquired_value;
+                        ?>
+
+                        <?php
+                            if ($investment->category == "fund")
+                            $chartFundTotal = $chartFundTotal + $investment->acquired_value;
+                        ?>
+
+                        <?php
+                            if ($investment->category == "property")
+                            $chartPropertyTotal = $chartPropertyTotal + $investment->acquired_value;
+                        ?>
+                 @endforeach
+            </tbody>
+    </table>
+        <h4>Total of INITIAL investment portfolio ${{$ivalue}}</h4>
+        <h4>Total of CURRENT investment portfolio ________</h4>
+    </div>
+ 
+
+
+
+
+ <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Investments', 'Asset Mix'],
+          ['Funds',     <?php echo  $chartFundTotal ?>],
+          ['Properties',     <?php echo  $chartPropertyTotal ?>],
+          ['Other',  <?php echo  $chartOtherTotal ?>],
+          ['401k', <?php echo  $chart401kTotal ?>],
+        ]);
+
+        var options = {
+          title: 'Initial Investment Mixture'
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+
+        chart.draw(data, {width: 400, height: 240, is3D: true, title: 'Initial Investment Mixture'});
+      }
+    </script>
+
+<div id="piechart" style="width: 900px; height: 500px;"></div>
+     
+
+
+
+<br>
+
+    <?php
+        $iportfolio = $ivalue + $stotal
+    ?>
+
+<h2>Summary of Portfolio</h2>
+    <h4>Total of INITIAL portfolio value ${{$iportfolio}}</h4>
+    <h4>Total of CURRENT portfolio value ________</h4>
+
+ <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["columnchart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Value', 'Initial', 'Current'],
+          ['Portfolio',  <?php echo  $iportfolio ?>,     <?php echo  $cportfolio ?>]
+        ]);
+
+        var chart = new google.visualization.ColumnChart(document.getElementById('summary_chart'));
+        chart.draw(data, {width: 400, height: 240, is3D: true, title: 'Portfolio Performance'});
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="summary_chart"></div>
+  </body>
 @stop

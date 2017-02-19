@@ -29,7 +29,7 @@
                 <td><?php echo e($customer->email); ?></td>
                 <td><?php echo e($customer->home_phone); ?></td>
                 <td><?php echo e($customer->cell_phone); ?></td>
-                <td><a href="<?php echo e(url('customers',$customer->id)); ?>" class="btn btn-primary">Read</a></td>
+                <td><a href="<?php echo e(url('customers',$customer->id)); ?>" class="btn btn-primary">View Portfolio</a></td>
                 <td><a href="<?php echo e(route('customers.edit',$customer->id)); ?>" class="btn btn-warning">Update</a></td>
                 <td>
                     <?php echo Form::open(['method' => 'DELETE', 'route'=>['customers.destroy', $customer->id]]); ?>
